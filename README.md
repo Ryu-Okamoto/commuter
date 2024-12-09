@@ -14,7 +14,7 @@
     "user_id": <int>,
     "commuting_data": [
       {
-        "departure_datetime": <hh:mm>,
+        "departure_time": <hh:mm>,
         "minutes_required": <mm>
       },
       ...
