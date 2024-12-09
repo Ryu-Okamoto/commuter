@@ -2,3 +2,5 @@ venv
 .env
 
 local*
+
+__pycache__
