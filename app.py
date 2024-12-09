@@ -52,6 +52,20 @@ def callback():
     return 'OK'
 
 
+@handler.add(MessageEvent, message=TextMessageContent)
+def handle_message(event):
+    with ApiClient(configuration) as api_client:
+        line_bot_api = MessagingApi(api_client)
+    received_message = event.message.text
+    profile = line_bot_api.get_profile(event.source.user_id)
+    display_name = profile.display_name
+    reply = f'{display_name}さんのメッセージ\n{received_message}'
+    line_bot_api.reply_message(ReplyMessageRequest(
+        replyToken=event.reply_token,
+        messages=[TextMessage(text=reply)]
+    ))
+
+
 @app.route('/', methods=['GET'])
 def toppage():
     return 'Hello world!'
