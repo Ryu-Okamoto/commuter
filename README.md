@@ -5,9 +5,23 @@
 誤差には2乗和誤差を，パラメタ更新には最急降下法を用います．
 
 
-## ローカル訓練
-`local_data.csv`を用意します．
-1行ごとに`出発時刻`と`所要時間`を`,`をデリミタとして記述します．
+## ローカル学習
+`local_data.json`を用意します．
+書式は次の通りです：
+```
+[
+  {
+    "user_id": <int>,
+    "commuting_data": [
+      {
+        "departure_datetime": <hh:mm>,
+        "minutes_required": <mm>
+      },
+      ...
+  },
+  ...
+]
+```
 手元の環境で`local_fit.py`を叩いてください．
 `weight.json`が更新されます．
 
