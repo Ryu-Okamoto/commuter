@@ -23,6 +23,8 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
+from predict import Predictor
+
 
 load_dotenv()
 CHANNEL_ACCESS_TOKEN = os.environ["CHANNEL_ACCESS_TOKEN"]
@@ -72,4 +74,8 @@ def toppage():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    #app.run(host="0.0.0.0", port=8000, debug=True)
+
+    model = Predictor(1)
+    model.load_weight()
+    model.dump_weight()
