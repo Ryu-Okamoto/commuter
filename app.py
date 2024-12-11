@@ -1,4 +1,5 @@
 import os
+from argparse import ArgumentParser
 from flask import (
     Flask,
     request,
@@ -74,8 +75,16 @@ def toppage():
 
 
 if __name__ == "__main__":
-    #app.run(host="0.0.0.0", port=8000, debug=True)
+    parser = ArgumentParser()
+    parser.add_argument(
+        '--local',
+        action='store_true',
+        help='train models with local data'
+    )
+    args = parser.parse_args()
 
-    model = Predictor(1)
-    model.load_weight()
-    model.dump_weight()
+    if args.local:
+        print('run local')
+    else:
+        print('run online')
+        # app.run(host="0.0.0.0", port=8000, debug=True)

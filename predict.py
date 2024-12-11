@@ -1,53 +1,61 @@
-from dataclasses import dataclass
 import json
 import numpy as np
 
 
-@dataclass
-class Weight:
-    w0: float = 1.0
-    w1: float = 1.0
-    w2: float = 1.0
-
-
 # quadratic regression model
 class Predictor:
-    def __init__(self, user_id: int):
-        self.user_id = user_id
-        self.weight = self.load_weight()
+    def __init__(self, _id, w0, w1, w2):
+        self.id = _id
+        self.w = np.array([w0, w1, w2])
 
-    def fit_local(self, data_path: str):
-        pass
+        # for online learning
+        self.n = 0
+        self.x_mean = 0.0
+        self.x_var = 0.0
+        self.y_mean = 0.0
+        self.y_var = 0.0
 
-    def fit_online(self, datetime):
-        pass
+    def fit(self, xs, ys):
+        n = len(xs)
+        xs = (xs - xs.mean()) / xs.std()
+        X = np.c_[xs**2, xs, np.ones([n, 1])]
+        ys = np.array(ys)
 
-    def predict(self, now) -> float:
-        pass
+        num_iter = 100
+        alpha = 0.05
 
-    def load_weight(self) -> Weight:
-        with open('weight.json') as f:
-            weight_json = json.load(f)
-        users = list(map(lambda obj: obj['user'], weight_json))
-        for user in users:
-            if self.user_id == user['id']:
-                return Weight(user['w0'], user['w1'], user['w2'])
-        return Weight()
+        for iter in range(num_iter):
+            h = np.dot(X, self.w)
+            self.w[0] = self.w[0] - (alpha / n) * (h - ys).sum()
+            self.w[1] = self.w[1] - (alpha / n) * ((h - ys).T.dot(X))
+            self.w[2] = self.w[2] - (alpha / n) * ((h - ys).T.dot(X**2))
 
-    def dump_weight(self):
-        with open('weight.json') as f:
-            weight_json = json.load(f)
-        users = list(map(lambda obj: obj['user'], weight_json))
-        target_user = None
-        for user in users:
-            if self.user_id == user['id']:
-                target_user = user
-                break
-        if target_user is None:
-            target_user = {'id': self.user_id}
-            weight_json.append({'user': target_user})
-        target_user['w0'] = self.weight.w0
-        target_user['w1'] = self.weight.w1
-        target_user['w2'] = self.weight.w2
-        with open('weight.json', mode='w') as f:
-            json.dump(weight_json, fp=f, indent=2)
+        # for online learning
+        self.n = n
+        self.x_mean = xs.mean()
+        self.x_dev = xs.dev()
+        self.y_mean = ys.mean()
+        self.y_dev = ys.dev()
+
+    def predict(self, x) -> float:
+        x_std = np.sqrt(self.x_dev)
+        y_std = np.sqrt(self.y_dev)
+        x = (x - self.x_mean) / x_std
+        y = self.w[0] + self.w[1] * x + self.w[2] * x**2
+        y = y * y_std + self.y_mean
+        return y
+
+    def to_json(self):
+        return \
+            {
+                'model': {
+                    'id': self.id,
+                    'w0': self.w[0],
+                    'w1': self.w[1],
+                    'w2': self.w[2]
+                }
+            }
+
+
+if __name__ == '__main__':
+    pass
