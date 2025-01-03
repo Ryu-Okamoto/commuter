@@ -24,8 +24,7 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
-from predict import Predictor
-
+from commuter.model import Predictor
 
 load_dotenv()
 CHANNEL_ACCESS_TOKEN = os.environ["CHANNEL_ACCESS_TOKEN"]
@@ -74,17 +73,20 @@ def toppage():
     return 'Hello world!'
 
 
+def train_models_locally():
+    pass
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument(
         '--local',
-        action='store_true',
-        help='train models with local data'
+        default='./local_data.json',
+        help='train models with local data (default ./local_data.json)'
     )
     args = parser.parse_args()
 
     if args.local:
-        print('run local')
+        train_models_locally()
     else:
-        print('run online')
-        # app.run(host="0.0.0.0", port=8000, debug=True)
+        app.run(host="0.0.0.0", port=8000, debug=True)
