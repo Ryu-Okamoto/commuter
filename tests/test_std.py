@@ -52,8 +52,8 @@ def test_next_var():
 def test_in_model():
     # case: [1, 2, 3, 4, 5] + [6]
     data = np.array([1, 2, 3, 4, 5])
-    model = Predictor(0, 0, 0, 0)
-    model.fit(data, data)
+    model = Predictor([.0, .0])
+    model.fit_local(data, data)
 
     # precondition
     actual_x_mean = model.x_mean

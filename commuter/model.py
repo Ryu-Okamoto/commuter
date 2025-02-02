@@ -1,21 +1,35 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
 
-# quadratic regression model
+# polynomial regression model
 class Predictor:
-    def __init__(self, _id: int, w0: float, w1: float, w2: float):
-        self.id = _id
-        self.w = np.array([w0, w1, w2])
+    def __init__(
+        self,
+        w: list = [1.0, 1.0, 1.0],
+        n: int = 0,
+        x_mean: float = 0.0,
+        x_var: float = 1.0,
+        y_mean: float = 0.0,
+        y_var: float = 1.0
+    ):
+        self.w = np.array(w)
 
         # for online learning
-        self.n = 0
-        self.x_mean = 0.0
-        self.x_var = 1.0
-        self.y_mean = 0.0
-        self.y_var = 1.0
+        self.n = n
+        self.x_mean = x_mean
+        self.x_var = x_var
+        self.y_mean = y_mean
+        self.y_var = y_var
 
-    def fit(self, xs, ys) -> list:
+    def fit_local(
+        self,
+        xs: list, 
+        ys: list,
+        num_of_epochs: int = 100,
+        learning_rate: float = 0.05
+    ) -> list:
         xs = np.array(xs)
         ys = np.array(ys)
 
@@ -28,24 +42,32 @@ class Predictor:
 
         xs = (xs - xs.mean()) / xs.std()
         ys = (ys - ys.mean()) / ys.std()
-        X = np.c_[np.ones([self.n, 1]), xs, xs**2]
+        X = np.array([xs**i for i in range(len(self.w))])
 
-        NUM_OF_EPOCH = 100
-        LEARNING_RATE = 0.05
         losses = []
-        for _ in range(NUM_OF_EPOCH):
-            fs = np.dot(X, self.w)
-            self.w[0] -= (LEARNING_RATE / self.n) * (fs - ys).sum()
-            self.w[1] -= (LEARNING_RATE / self.n) * ((fs - ys).T.dot(xs))
-            self.w[2] -= (LEARNING_RATE / self.n) * ((fs - ys).T.dot(xs**2))
+        for _ in range(num_of_epochs):
+            fs = np.dot(self.w, X)
+            for i in range(len(self.w)):
+                self.w[i] -= (learning_rate / self.n) * (fs - ys).T.dot(xs**i)
             loss = ((fs - ys)**2).sum()
             losses.append(loss)
 
         return losses
 
-    # MUST: call fit() in advance
-    # because var(std) becomes 0, and div0 error occurs
-    def fit_online(self, x, y):
+    def fit_online(
+        self,
+        x: float,
+        y: float,
+        num_of_epochs: int = 10,
+        learning_rate: float = 0.01
+    ) -> list:   
+        if self.n == 0:
+            self.x_var = 0.0
+            self.x_mean = x
+            self.y_var = 0.0
+            self.y_mean = y
+            self.n += 1
+            return float('inf')
 
         # for (un-)standardizing
         self.x_var = next_var(x, self.n, self.x_mean, self.x_var)
@@ -58,21 +80,24 @@ class Predictor:
         y_std = np.sqrt(self.y_var)
         x = (x - self.x_mean) / x_std
         y = (y - self.y_mean) / y_std
-        X = np.array([1, x, x**2])
+        X = np.array([x**i for i in range(len(self.w))])
 
-        NUM_OF_EPOCH = 10
-        LEARNING_RATE = 0.01
-        for _ in range(NUM_OF_EPOCH):
-            f = np.dot(X, self.w)
-            self.w[0] -= LEARNING_RATE * (f - y)
-            self.w[1] -= LEARNING_RATE * (f - y) * x
-            self.w[0] -= LEARNING_RATE * (f - y) * x**2
+        losses = []
+        for _ in range(num_of_epochs):
+            f = np.dot(self.w, X)
+            for i in range(len(self.w)):
+                self.w[i] -= learning_rate * (f - y) * x**i
+            loss = (f - y)**2
+            losses.append(loss)
+        
+        return losses
 
     def predict(self, x) -> float:
         x_std = np.sqrt(self.x_var)
         y_std = np.sqrt(self.y_var)
         x = (x - self.x_mean) / x_std
-        y = self.w[0] + self.w[1] * x + self.w[2] * x**2
+        X = np.array([x**i for i in range(len(self.w))])
+        y = np.dot(self.w, X)
         y = y * y_std + self.y_mean
         return y
 
@@ -80,10 +105,12 @@ class Predictor:
         return \
             {
                 'model': {
-                    'id': self.id,
-                    'w0': self.w[0],
-                    'w1': self.w[1],
-                    'w2': self.w[2]
+                    'w': list(map(float, self.w)),
+                    'n': int(self.n),
+                    'x_mean': float(self.x_mean),
+                    'x_var': float(self.x_var),
+                    'y_mean': float(self.y_mean),
+                    'y_var': float(self.y_var)
                 }
             }
 
@@ -99,10 +126,10 @@ def next_var(new_value, n: int, mean: float, var: float) -> float:
 
 if __name__ == '__main__':
     xs = np.linspace(-5., 5., 50)
-    ys = xs**2 + np.random.normal(size=len(xs))
+    ys = xs**3 - 2.0 * xs + np.random.normal(size=len(xs))
 
-    model = Predictor(0, 0., 0., 0.)
-    losses = model.fit(xs, ys)
+    model = Predictor([1., 1., 1., 1.])
+    losses = model.fit_local(xs, ys)
     ys_ = list(map(model.predict, xs))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
@@ -113,8 +140,10 @@ if __name__ == '__main__':
     ax2.plot(losses, '.')
     ax2.set_title('loss')
     fig.suptitle(
-        r'training quadratic regression model for '
-        r'data following y = x$^2$ + $\varepsilon$, where $\varepsilon \sim N(0,1)$'
+        r'training polynomial regression model for '
+        r'data following y = x$^3 - 2x$ + $\varepsilon$, where $\varepsilon \sim N(0,1)$'
     )
 
     plt.show()
+
+    print(json.dumps(model.to_json(), indent=4, ensure_ascii=True))
