@@ -17,11 +17,18 @@
     "user_id": <str>,
     "commuting_data": [
       {
-        "departure_time": <hhmm>,
-        "minutes_required": <mm>
+        "departure_time": <hhmmss>,
+        "minutes_required": <hhmmss>
       },
       ...
     ],
+    "returning_data": [
+      {
+        "departure_time": <hhmmss>,
+        "minutes_required": <hhmmss>
+      },
+      ...
+    ]
   },
   ...
 ]

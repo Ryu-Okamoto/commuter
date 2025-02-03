@@ -7,7 +7,7 @@ import json
 class Predictor:
     def __init__(
         self,
-        w: list = [1.0, 1.0, 1.0],
+        w: list = [1., 1., 1., 1.],
         n: int = 0,
         x_mean: float = 0.0,
         x_var: float = 1.0,
@@ -27,8 +27,8 @@ class Predictor:
         self,
         xs: list, 
         ys: list,
-        num_of_epochs: int = 100,
-        learning_rate: float = 0.05
+        num_of_epochs: int = 10000,
+        learning_rate: float = 0.0002
     ) -> list:
         xs = np.array(xs)
         ys = np.array(ys)
@@ -59,7 +59,7 @@ class Predictor:
         x: float,
         y: float,
         num_of_epochs: int = 10,
-        learning_rate: float = 0.01
+        learning_rate: float = 0.0001
     ) -> list:   
         if self.n == 0:
             self.x_var = 0.0
