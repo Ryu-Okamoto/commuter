@@ -1,5 +1,5 @@
 from hhmmss import HHMMSS
-from model_helper import Model
+from commuter.model import Model
 
 
 class User:

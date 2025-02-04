@@ -22,7 +22,7 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
-from commuter.model import Predictor
+from commuter.model_raw import Predictor
 
 
 load_dotenv()

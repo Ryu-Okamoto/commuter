@@ -11,7 +11,7 @@ class HHMMSS:
         self.ss = hhmmss[4:]
 
     @classmethod
-    def from_hhmmss(cls, hhmmss: str | None) -> HHMMSS | None:
+    def from_hhmmss(cls, hhmmss: str) -> HHMMSS | None:
         if hhmmss is None or not validate_hhmmss(hhmmss):
             return None
         return HHMMSS(hhmmss)
@@ -20,9 +20,7 @@ class HHMMSS:
     def from_seconds(cls, seconds: int) -> HHMMSS | None:
         return HHMMSS.from_hhmmss(deserialize(seconds))
     
-    def to_str(self) -> str | None:
-        if not self._valid:
-            return None
+    def to_str(self) -> str:
         hh = self.hh.lstrip('0')
         mm = self.mm.lstrip('0') if hh == '' else mm
         ss = self.ss.lstrip('0') if mm == '' else ss
@@ -31,11 +29,8 @@ class HHMMSS:
             mm + '分' if mm != '' else '' + \
             ss + '秒' if ss != '' else ''
     
-    def diff(self, other: HHMMSS) -> HHMMSS | None:
-        if not self._valid or not other._valid:
-            return None
-        return HHMMSS.from_hhmmss(
-            subtract_hhmmss(self._hhmmss, other._hhmmss))
+    def to_seconds(self) -> int:
+        return serialize(self._hhmmss)
     
 
 def validate_hhmmss(hhmmss: str) -> bool:

@@ -2,8 +2,8 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-from model import Predictor
-from model_helper import serialize, deserialize
+from commuter.model_raw import Predictor
+from commuter.model import Model
 
 
 def main(data_path: str, weights_path: str):

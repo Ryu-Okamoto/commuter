@@ -1,6 +1,6 @@
 import numpy as np
 
-from commuter.model import Predictor, next_mean, next_var
+from commuter.model_raw import Predictor, next_mean, next_var
 
 
 def test_next_mean():
