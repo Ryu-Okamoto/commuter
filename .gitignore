@@ -1,6 +1,6 @@
 venv
 .env
 
-local*
+local_data
 
 __pycache__
